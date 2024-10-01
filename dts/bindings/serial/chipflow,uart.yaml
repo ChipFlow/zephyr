@@ -1,0 +1,9 @@
+description: ChipFlow UART
+
+compatible: "chipflow,uart"
+
+include: [uart-controller.yaml]
+
+properties:
+  reg:
+    required: true

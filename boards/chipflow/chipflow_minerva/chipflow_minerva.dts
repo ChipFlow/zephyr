@@ -1,0 +1,56 @@
+/dts-v1/;
+
+#include <freq.h>
+#include <mem.h>
+
+/ {
+	model = "ChipFlow Minerva";
+	compatible = "chipflow,minerva";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	chosen {
+		zephyr,flash = &flash0;
+		zephyr,sram = &sram0;
+		zephyr,console = &uart0;
+		zephyr,shell-uart = &uart0;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			reg = <0x0>;
+			compatible = "riscv";
+			riscv,isa = "rv32im_zicsr_zifencei";
+			status = "okay";
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		flash0: flash@100000 {
+			reg = <0x100000 DT_SIZE_M(15)>;
+			compatible = "soc-nv-flash";
+		};
+
+		sram0: memory@10000000 {
+			device_type = "memory";
+			reg = <0x10000000 DT_SIZE_K(8)>;
+		};
+
+		uart0: uart@b2000000 {
+			reg = <0xb2000000 DT_SIZE_K(1)>;
+			compatible = "chipflow,uart";
+
+			clock-frequency = <DT_FREQ_M(25)>;
+			current-speed = <115200>;
+			status = "okay";
+		};
+	};
+
+};

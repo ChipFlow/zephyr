@@ -1,0 +1,7 @@
+config UART_CHIPFLOW
+	bool "ChipFlow serial driver"
+	default y
+	depends on DT_HAS_CHIPFLOW_UART_ENABLED
+	select SERIAL_HAS_DRIVER
+	help
+	  This option enables ChipFlow UART serial driver.

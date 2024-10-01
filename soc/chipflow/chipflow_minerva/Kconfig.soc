@@ -1,0 +1,5 @@
+config SOC_CHIPFLOW_MINERVA
+	bool
+
+config SOC
+	default "chipflow_minerva" if SOC_CHIPFLOW_MINERVA

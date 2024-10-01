@@ -1,0 +1,5 @@
+board:
+  name: chipflow_minerva
+  vendor: chipflow
+  socs:
+  - name: chipflow_minerva
