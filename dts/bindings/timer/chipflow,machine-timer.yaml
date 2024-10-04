@@ -1,0 +1,13 @@
+description: |
+  ChipFlow Machine Timer
+
+compatible: "chipflow,machine-timer"
+
+include: base.yaml
+
+properties:
+  reg:
+    required: true
+
+  interrupts:
+    required: true

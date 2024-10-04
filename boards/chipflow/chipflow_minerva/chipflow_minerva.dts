@@ -26,6 +26,13 @@
 			compatible = "riscv";
 			riscv,isa = "rv32im_zicsr_zifencei";
 			status = "okay";
+
+			hlic: interrupt-controller {
+				#address-cells = <0>;
+				#interrupt-cells = <1>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+			};
 		};
 	};
 
@@ -49,6 +56,14 @@
 
 			clock-frequency = <DT_FREQ_M(25)>;
 			current-speed = <115200>;
+			status = "okay";
+		};
+
+		clint: clint@b3000000 {
+			reg = <0xb3000000 DT_SIZE_K(1)>;
+			compatible = "chipflow,machine-timer";
+			interrupt-parent = <&hlic>;
+			interrupts = <7 0>;
 			status = "okay";
 		};
 	};
