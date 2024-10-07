@@ -47,7 +47,7 @@
 
 		sram0: memory@10000000 {
 			device_type = "memory";
-			reg = <0x10000000 DT_SIZE_K(8)>;
+			reg = <0x10000000 DT_SIZE_K(1)>;
 		};
 
 		uart0: uart@b2000000 {
