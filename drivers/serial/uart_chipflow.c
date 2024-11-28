@@ -12,43 +12,40 @@
 #include <zephyr/kernel.h>
 
 struct uart_chipflow_regs {
-	uint32_t tx_data;
-	uint32_t rx_data;
-	uint32_t tx_ready;
-	uint32_t rx_avail;
-	uint32_t divisor;
+	uint32_t config;
+	uint32_t phy_config;
+	uint32_t status;
+	uint32_t data;
 };
 
 struct uart_chipflow_config {
-	struct uart_chipflow_regs *regs;
+	struct uart_chipflow_regs *rx;
+	struct uart_chipflow_regs *tx;
 	uint32_t clk_freq;
 	uint32_t baudrate;
-};
-
-struct uart_chipflow_data {
 };
 
 static void uart_chipflow_poll_out(const struct device *dev, unsigned char c)
 {
 	const struct uart_chipflow_config *const config = dev->config;
-	volatile struct uart_chipflow_regs *uart = config->regs;
+	volatile struct uart_chipflow_regs *tx = config->tx;
 
-	while (!uart->tx_ready) {
+	while (!(tx->status & 1)) {
 	}
 
-	uart->tx_data = (uint32_t)(c);
+	tx->data = (uint32_t)(c);
 }
 
 static int uart_chipflow_poll_in(const struct device *dev, unsigned char *c)
 {
 	const struct uart_chipflow_config *const config = dev->config;
-	volatile struct uart_chipflow_regs *uart = config->regs;
+	volatile struct uart_chipflow_regs *rx = config->rx;
 
-	if (!uart->rx_avail) {
+	if (!(rx->status & 1)) {
 		return -1;
 	}
 
-	*c = (unsigned char)(uart->rx_data & 0xFF);
+	*c = (unsigned char)(rx->data & 0xFF);
 
 	return 0;
 }
@@ -56,9 +53,20 @@ static int uart_chipflow_poll_in(const struct device *dev, unsigned char *c)
 static int uart_chipflow_init(const struct device *dev)
 {
 	const struct uart_chipflow_config *const config = dev->config;
-	volatile struct uart_chipflow_regs *uart = config->regs;
+	volatile struct uart_chipflow_regs *rx = config->rx;
+	volatile struct uart_chipflow_regs *tx = config->tx;
 
-	uart->divisor = config->clk_freq / config->baudrate - 1;
+	// disable the UART
+	rx->config = 0;
+	tx->config = 0;
+
+	// set the baudrate divisor
+	rx->phy_config = (uint32_t)((config->clk_freq / config->baudrate - 1) & 0x00FFFFFF);
+	tx->phy_config = (uint32_t)((config->clk_freq / config->baudrate - 1) & 0x00FFFFFF);
+
+	// enable the UART
+	rx->config = 1;
+	tx->config = 1;
 
 	return 0;
 }
@@ -69,10 +77,9 @@ static const struct uart_driver_api uart_chipflow_driver_api = {
 	.err_check = NULL
 };
 
-static struct uart_chipflow_data uart_chipflow_data_0;
-
 static const struct uart_chipflow_config uart_chipflow_config_0 = {
-	.regs = (void *)DT_INST_REG_ADDR(0),
+	.rx = (void *)(DT_INST_REG_ADDR(0) + 0x000U),
+	.tx = (void *)(DT_INST_REG_ADDR(0) + 0x200U),
 	.clk_freq = DT_INST_PROP(0, clock_frequency),
 	.baudrate = DT_INST_PROP(0, current_speed)
 };
@@ -80,7 +87,7 @@ static const struct uart_chipflow_config uart_chipflow_config_0 = {
 DEVICE_DT_INST_DEFINE(0,
 	uart_chipflow_init,
 	NULL,
-	&uart_chipflow_data_0,
+	NULL,
 	&uart_chipflow_config_0,
 	PRE_KERNEL_1,
 	CONFIG_SERIAL_INIT_PRIORITY,
